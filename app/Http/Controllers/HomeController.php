@@ -42,4 +42,19 @@ class HomeController extends Controller
 
         return redirect(route('home'));
     }
+
+    public function edit($id)//URLのパラメータを引数として取得
+    {
+        //必要な条件で絞ってメモを取得
+        $memos = Memo::select('memos.*')
+            ->where('user_id', '=', \Auth::id())//ログインしているユーザーによって動的に変わるようにする
+            ->whereNull('deleted_at')
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+        $edit_memo = Memo::find($id);//引数でfindメソッドを使ってメモを一つ取ってくる
+
+        return view('edit', compact('memos', 'edit_memo'));//取ってきたメモをviewに渡す
+    }
+
 }
