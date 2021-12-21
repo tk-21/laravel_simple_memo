@@ -57,4 +57,13 @@ class HomeController extends Controller
         return view('edit', compact('memos', 'edit_memo'));//取ってきたメモをviewに渡す
     }
 
+    public function update(Request $request)
+    {
+        $posts = $request->all();
+
+        Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]);//updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
+
+        return redirect(route('home'));
+    }
+
 }
