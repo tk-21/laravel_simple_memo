@@ -3,8 +3,10 @@
 @section('content')
 <div class="card">
     <div class="card-header">メモ編集</div>
-    <form class="card-body" action="{{ route('store') }}" method="POST">
+    <form class="card-body" action="{{ route('update') }}" method="POST">
         @csrf
+        <!-- ↓どのidのメモを更新するのかを教えてあげるために必要な記述。今編集しているメモのidを埋め込んでコントローラーに教えてあげる -->
+        <input type="hidden" name="memo_id" value="{{ $edit_memo['id'] }}">
         <div class="form-group">
             <textarea class="form-control" name="content" rows="3" placeholder="ここにメモを入力">{{ $edit_memo['content'] }}</textarea>
         </div>
