@@ -6,8 +6,9 @@
     <form class="card-body" action="{{ route('store') }}" method="POST">
         @csrf
         <div class="form-group">
-            <textarea class="form-control" name="content" rows="3" placeholder="ここにメモを入力"></textarea>
+            <textarea class="form-control mb-3" name="content" rows="3" placeholder="ここにメモを入力"></textarea>
         </div>
+        <input type="text" class="form-control w-50 mb-3" name="new_tag" placeholder="新しいタグ">
         <button type="submit" class="btn btn-primary">保存</button>
     </form>
 </div>
