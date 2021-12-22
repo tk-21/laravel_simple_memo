@@ -27,7 +27,7 @@ class HomeController extends Controller
         //必要な条件で絞ってメモを取得
         $memos = Memo::select('memos.*')
             ->where('user_id', '=', \Auth::id())//ログインしているユーザーによって動的に変わるようにする
-            ->whereNull('deleted_at')
+            ->whereNull('deleted_at')//deleted_atに値があるものは削除されたとみなす
             ->orderBy('updated_at', 'DESC')
             ->get();
 
@@ -62,6 +62,15 @@ class HomeController extends Controller
         $posts = $request->all();
 
         Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]);//updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
+
+        return redirect(route('home'));
+    }
+
+    public function destroy(Request $request)
+    {
+        $posts = $request->all();
+
+        Memo::where('id', $posts['memo_id'])->update(['deleted_at' => date("Y-m-d H:i:s", time())]);//deleted_atに削除された時間を追加することで論理削除を行う
 
         return redirect(route('home'));
     }
