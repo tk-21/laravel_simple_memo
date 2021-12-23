@@ -34,7 +34,12 @@ class HomeController extends Controller
             ->orderBy('updated_at', 'DESC')
             ->get();
 
-        return view('create', compact('memos'));
+        $tags = Tag::where('user_id', '=', \Auth::id())
+            ->whereNull('deleted_at')
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        return view('create', compact('memos', 'tags')); //viewに渡す
     }
 
     public function store(Request $request)
@@ -48,13 +53,18 @@ class HomeController extends Controller
             $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists(); //user_idとnameが同じであれば既に存在すると判断できる
             //新規タグが入力されているかチェック
             //新規タグが既にtagsテーブルに存在するのかチェック（タグの存在チェックをしないと同じ名前のタグが複数存在してしまう）
-            if (!empty($posts['new_tag']) && !$tag_exists) {
+            if ((!empty($posts['new_tag']) || $posts['new_tag'] === "0") && !$tag_exists) {
                 //新規タグが既に存在しなければ、tagsテーブルにインサートし、IDを取得
                 $tag_id = Tag::insertGetId(['user_id' => \Auth::id(), 'name' => $posts['new_tag']]);
                 //memo_tagsにインサートして、メモとタグを紐付ける
                 MemoTag::insert(['memo_id' => $memo_id, 'tag_id' => $tag_id]);
             }
-            //
+            //既存タグが紐付けられた場合→memo_tagsにインサート
+            if (!empty($posts['tags'][0])) {
+                foreach ($posts['tags'] as $tag) {
+                    MemoTag::insert(['memo_id' => $memo_id, 'tag_id' => $tag]);
+                }
+            }
         });
         //ここまでがトランザクションの範囲
 
