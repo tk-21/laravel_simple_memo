@@ -76,14 +76,31 @@ class HomeController extends Controller
     {
         //必要な条件で絞ってメモを取得
         $memos = Memo::select('memos.*')
-            ->where('user_id', '=', \Auth::id()) //ログインしているユーザーによって動的に変わるようにする
+            ->where('user_id', '=', \Auth::id()) //自分のメモである（ログインしているユーザーによって動的に変わるようにする）
             ->whereNull('deleted_at')
             ->orderBy('updated_at', 'DESC')
             ->get();
 
-        $edit_memo = Memo::find($id); //引数でfindメソッドを使ってメモを一つ取ってくる
+        $edit_memo = Memo::select('memos.*', 'tags.id AS tag_id')
+            ->leftJoin('memo_tags', 'memo_tags.memo_id', '=', 'memos.id')
+            ->leftJoin('tags', 'memo_tags.tag_id', '=', 'tags.id')
+            ->where('memos.user_id', '=', \Auth::id()) //自分のメモである（ログインしているユーザーによって動的に変わるようにする）
+            ->where('memos.id', '=', $id)
+            ->whereNull('memos.deleted_at')
+            ->get(); //複数行とってきたい場合はget
 
-        return view('edit', compact('memos', 'edit_memo')); //取ってきたメモをviewに渡す
+        $include_tags = [];
+        foreach ($edit_memo as $memo) {
+            array_push($include_tags, $memo['tag_id']);
+        }
+
+        //タグ一覧を取ってくる
+        $tags = Tag::where('user_id', '=', \Auth::id())
+        ->whereNull('deleted_at')
+        ->orderBy('id', 'DESC')
+        ->get();
+
+        return view('edit', compact('memos', 'edit_memo', 'include_tags', 'tags')); //取ってきたメモをviewに渡す
     }
 
     public function update(Request $request)
