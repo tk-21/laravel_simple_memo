@@ -107,7 +107,28 @@ class HomeController extends Controller
     {
         $posts = $request->all();
 
-        Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]); //updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
+        DB::transaction(function () use($posts) {
+            Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]); //updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
+            //一旦メモとタグの紐付けを削除
+            MemoTag::where('memo_id', '=', $posts['memo_id'])->delete();
+            //再度メモとタグの紐付け
+            foreach($posts['tags'] as $tag) {
+                MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag]);
+            }
+            //もし、新しいタグの入力があれば、インサートして紐付ける
+            //自分のユーザーIDとタグテーブルのユーザーIDが一致するところかつ、投げられてきたnew_tagと一致するところがあれば、存在する
+            $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();//存在すればtrueを返す
+            //新規タグが入力されているかチェック
+            //新規タグが既にtagsテーブルに存在するのかチェック（タグの存在チェックをしないと同じ名前のタグが複数存在してしまう）
+            if ((!empty($posts['new_tag']) || $posts['new_tag'] === "0") && !$tag_exists) {
+                //新規タグが既に存在しなければ、tagsテーブルにインサートし、IDを取得
+                $tag_id = Tag::insertGetId(['user_id' => \Auth::id(), 'name' => $posts['new_tag']]);
+                //memo_tagsにインサートして、メモとタグを紐付ける
+                MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag_id]);
+            }
+
+        });
+
 
         return redirect(route('home'));
     }

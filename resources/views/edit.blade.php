@@ -19,7 +19,7 @@
         </div>
         @foreach($tags as $tag)
         <div class="form-check form-check-inline mb-3">
-            <!-- もし$include_tags -->
+            <!-- もし$include_tagsにループで回っているタグのidが含まれれば、checkedを書く -->
             <input class="form-check-input" type="checkbox" name="tags[]" id="{{ $tag['id'] }}" value="{{ $tag['id'] }}" {{ in_array($tag['id'], $include_tags) ? 'checked' : '' }}>
             <label class="form-check-label" for="{{ $tag['id'] }}">{{ $tag['name'] }}</label>
         </div>
