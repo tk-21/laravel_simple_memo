@@ -38,6 +38,7 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         $posts = $request->all();
+        $request->validate([ 'content' => 'required' ]);//contentのところはname属性と一致させる
 
         //ここからトランザクション開始
         DB::transaction(function () use ($posts) { //クロージャー（独立した空間）
@@ -92,6 +93,7 @@ class HomeController extends Controller
     public function update(Request $request)
     {
         $posts = $request->all();
+        $request->validate([ 'content' => 'required' ]);//contentのところはname属性と一致させる
 
         DB::transaction(function () use($posts) {
             Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]); //updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
