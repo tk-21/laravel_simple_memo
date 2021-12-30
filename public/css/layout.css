@@ -7,3 +7,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+@media (max-width: 768px) {
+    .my-card-body {
+        height: auto;
+        min-height: 50vh;
+    }
+}
