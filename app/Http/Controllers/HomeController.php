@@ -38,7 +38,7 @@ class HomeController extends Controller
     public function store(Request $request)
     {
         $posts = $request->all();
-        $request->validate([ 'content' => 'required' ]);//contentのところはname属性と一致させる
+        $request->validate(['content' => 'required']); //contentのところはname属性と一致させる
 
         //ここからトランザクション開始
         DB::transaction(function () use ($posts) { //クロージャー（独立した空間）
@@ -83,9 +83,9 @@ class HomeController extends Controller
 
         //タグ一覧を取ってくる
         $tags = Tag::where('user_id', '=', \Auth::id())
-        ->whereNull('deleted_at')
-        ->orderBy('id', 'DESC')
-        ->get();
+            ->whereNull('deleted_at')
+            ->orderBy('id', 'DESC')
+            ->get();
 
         return view('edit', compact('edit_memo', 'include_tags', 'tags')); //取ってきたメモをviewに渡す
     }
@@ -93,19 +93,21 @@ class HomeController extends Controller
     public function update(Request $request)
     {
         $posts = $request->all();
-        $request->validate([ 'content' => 'required' ]);//contentのところはname属性と一致させる
+        $request->validate(['content' => 'required']); //contentのところはname属性と一致させる
 
-        DB::transaction(function () use($posts) {
+        DB::transaction(function () use ($posts) {
             Memo::where('id', $posts['memo_id'])->update(['content' => $posts['content']]); //updateをする際は必ずwhereで行を指定するような情報を入れる。そのためにtype hiddenで埋め込んだ
             //一旦メモとタグの紐付けを削除
             MemoTag::where('memo_id', '=', $posts['memo_id'])->delete();
             //再度メモとタグの紐付け
-            foreach($posts['tags'] as $tag) {
-                MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag]);
+            if (!empty($posts['tags'][0])) {
+                foreach ($posts['tags'] as $tag) {
+                    MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag]);
+                }
             }
             //もし、新しいタグの入力があれば、インサートして紐付ける
             //自分のユーザーIDとタグテーブルのユーザーIDが一致するところかつ、投げられてきたnew_tagと一致するところがあれば、存在する
-            $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists();//存在すればtrueを返す
+            $tag_exists = Tag::where('user_id', '=', \Auth::id())->where('name', '=', $posts['new_tag'])->exists(); //存在すればtrueを返す
             //新規タグが入力されているかチェック
             //新規タグが既にtagsテーブルに存在するのかチェック（タグの存在チェックをしないと同じ名前のタグが複数存在してしまう）
             if ((!empty($posts['new_tag']) || $posts['new_tag'] === "0") && !$tag_exists) {
@@ -114,7 +116,6 @@ class HomeController extends Controller
                 //memo_tagsにインサートして、メモとタグを紐付ける
                 MemoTag::insert(['memo_id' => $posts['memo_id'], 'tag_id' => $tag_id]);
             }
-
         });
 
 
