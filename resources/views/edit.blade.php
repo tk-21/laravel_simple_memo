@@ -6,16 +6,16 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">
+    <div class="card-header d-flex justify-content-between">
         メモ編集
-        <form class="card-body" id="delete-form" action="{{ route('destroy') }}" method="POST">
+        <form id="delete-form" action="{{ route('destroy') }}" method="POST">
             @csrf
             <input type="hidden" name="memo_id" value="{{ $edit_memo[0]['id'] }}">
             <!-- ここでイベントを呼び出す -->
-            <i class="fas fa-trash" onclick="deleteHandle(event);"></i>
+            <i class="fas fa-trash mr-3" onclick="deleteHandle(event);"></i>
         </form>
     </div>
-    <form class="card-body" action="{{ route('update') }}" method="POST">
+    <form class="card-body my-card-body" action="{{ route('update') }}" method="POST">
         @csrf
         <!-- ↓どのidのメモを更新するのかを教えてあげるために必要な記述。今編集しているメモのidを埋め込んでコントローラーに教えてあげる -->
         <input type="hidden" name="memo_id" value="{{ $edit_memo[0]['id'] }}">
